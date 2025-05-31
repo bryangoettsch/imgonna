@@ -4,7 +4,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/bgoettsch/imgonna/backend/internal/handlers"
+	"github.com/bgoettsch/imgonna/backend/internal/services"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +19,20 @@ func main() {
 	}
 
 	r := gin.Default()
+
+	// CORS middleware
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	// Initialize services
+	anthropicService := services.NewAnthropicService()
+	goalsHandler := handlers.NewGoalsHandler(anthropicService)
 
 	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {
@@ -32,6 +50,9 @@ func main() {
 				"message": "imgonna API v1",
 			})
 		})
+		
+		// Goals endpoint
+		api.POST("/goals", goalsHandler.CreateGoal)
 	}
 
 	port := os.Getenv("PORT")
