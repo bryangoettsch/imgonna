@@ -1,0 +1,17 @@
+Prompt: Start a work item.  
+
+Description: Using the github issue referenced 
+
+
+Requirements:
+    1. Using the title and desciption in the work item create a create a high quality prompt for a developer to review.
+    2. Interactively, ask any clarifying questions that help identify what is need to complete the work item.
+    3. Be sure to identify the repositories that need to be modfied 
+    5. The prompt should include swithching to the main branch and doing a pull to get the latest code
+    6. Create a feature beanch of the form  <issue type>/<issue number>-<description>
+    7. Place the output in a new prompt file using the naming convention a new prompt file with using the naming convention:
+             <issue type>-<issue number>-<description>.txt  in the prompts folder 
+    8. Add a requirement to the prompt that generates a PR using the steps in prompts/create-a-pr.txt indicating the work item
+
+
+

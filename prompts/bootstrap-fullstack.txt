@@ -1,0 +1,126 @@
+Prompt: Bootstrap Full-Stack imgonna Application
+
+Description: Create a complete full-stack application with Go API backend, PostgreSQL database, React frontend, and Auth0 authentication integration.
+
+Requirements:
+
+## Project Setup
+1. Initialize project structure for imgonna application
+2. Set up Git repository with proper .gitignore files
+3. Create development environment with Docker containerization
+4. Configure environment variables and secrets management
+
+## Backend (Go API)
+1. Initialize Go module for REST API
+2. Set up PostgreSQL connection with migration support (using golang-migrate or similar)
+3. Implement database models:
+   - Users table with Auth0 integration
+   - Role-based access (admin/user roles)
+   - Future-proof schema for easy migrations
+4. Create REST API endpoints:
+   - Authentication middleware
+   - User management endpoints
+   - Role-based authorization
+   - Health check endpoint
+5. Integrate Auth0 for authentication:
+   - JWT token validation
+   - User profile synchronization
+   - Role mapping
+6. Set up testing framework using Testify
+7. Add Claude API integration for AI assistance features
+8. Implement proper error handling and logging
+9. Create API documentation (OpenAPI/Swagger)
+
+## Frontend (React)
+1. Initialize React application with Vite
+2. Set up Tailwind CSS for modern, minimalist UI design
+3. Configure Zustand for state management
+4. Implement Auth0 React SDK integration:
+   - Login/logout functionality
+   - Social login support (Google, GitHub, etc.)
+   - Protected routes
+   - Role-based UI components
+5. Create component library with Storybook
+6. Set up testing with Vitest and React Testing Library
+7. Implement responsive, accessible UI components
+8. Create AI assistance interface using Claude API
+9. Add proper TypeScript configuration
+10. Set up ESLint and Prettier for code quality
+
+## Database (PostgreSQL)
+1. Set up PostgreSQL with Docker
+2. Create initial migration files:
+   - Users table with Auth0 user_id mapping
+   - Roles and permissions tables
+   - Indexes for performance
+3. Configure connection pooling
+4. Set up database seeding for development
+5. Implement backup and restore procedures
+
+## Authentication (Auth0)
+1. Configure Auth0 tenant and application
+2. Set up social identity providers (Google, GitHub)
+3. Configure roles and permissions in Auth0
+4. Implement user profile management
+5. Set up Auth0 Rules/Actions for custom claims
+6. Configure CORS and allowed callback URLs
+
+## DevOps & Deployment
+1. Create multi-stage Dockerfiles:
+   - Development environment with hot reload
+   - Production-optimized builds
+2. Set up docker-compose for local development
+3. Configure CI/CD pipeline preparation
+4. Implement health checks and monitoring endpoints
+5. Set up environment-specific configurations
+6. Create deployment documentation
+
+## Testing Strategy
+1. Backend testing with Testify:
+   - Unit tests for business logic
+   - Integration tests for API endpoints
+   - Database tests with test containers
+2. Frontend testing with Vitest:
+   - Component unit tests
+   - Integration tests for user flows
+   - Storybook visual regression tests
+3. E2E testing setup (Playwright or Cypress)
+
+## Security & Best Practices
+1. Implement secure JWT handling
+2. Set up CORS properly
+3. Add rate limiting and request validation
+4. Implement proper secret management
+5. Set up security headers
+6. Add input sanitization and validation
+7. Implement audit logging
+
+## Development Workflow
+1. Switch to main branch and pull latest code
+2. Create feature branch: feature/bootstrap-fullstack-setup
+3. Implement all components systematically
+4. Run all tests and ensure they pass
+5. Verify Docker containers build and run correctly
+6. Create comprehensive README with setup instructions
+7. Generate PR using steps in prompts/create-a-pr.txt
+
+## Deliverables
+- Complete project structure with all configurations
+- Working Docker development environment
+- Functional authentication with Auth0
+- Basic UI with component library and Storybook
+- API with proper testing and documentation
+- Database with migration system
+- Comprehensive setup and deployment documentation
+
+## Success Criteria
+- Application runs successfully in Docker
+- Authentication flow works end-to-end
+- API endpoints are functional and tested
+- Frontend components render correctly
+- Database migrations execute properly
+- All tests pass
+- Storybook showcases component library
+- Claude API integration functions correctly
+
+This bootstrap should create a solid foundation for the imgonna application that can scale and evolve with future requirements.
