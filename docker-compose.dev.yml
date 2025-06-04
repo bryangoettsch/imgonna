@@ -5,10 +5,12 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: imgonna-postgres-dev
+    env_file:
+      - .env.local
     environment:
-      POSTGRES_DB: imgonna
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -22,15 +24,10 @@ services:
     image: golang:1.24-alpine
     container_name: imgonna-backend-dev
     working_dir: /app
+    env_file:
+      - .env.local
     environment:
       - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_NAME=imgonna
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_SSL_MODE=disable
-      - PORT=8080
-      - ENVIRONMENT=development
     ports:
       - "8080:8080"
     depends_on:

@@ -1,8 +1,12 @@
 package services
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -13,27 +17,135 @@ type AnthropicServiceInterface interface {
 
 type AnthropicService struct {
 	apiKey string
+	httpClient *http.Client
 }
 
 func NewAnthropicService() *AnthropicService {
 	apiKey := os.Getenv("CLAUDE_API_KEY")
 	if apiKey == "" {
 		// For development, provide a mock response if no API key
-		return &AnthropicService{apiKey: "mock"}
+		return &AnthropicService{apiKey: "mock", httpClient: nil}
 	}
 
-	return &AnthropicService{apiKey: apiKey}
+	// Initialize HTTP client for real API calls
+	httpClient := &http.Client{}
+	return &AnthropicService{apiKey: apiKey, httpClient: httpClient}
 }
 
 func (s *AnthropicService) ProcessGoal(ctx context.Context, goal string) (string, error) {
-	// For now, provide a mock response if no real API key or if key is "mock"
-	if s.apiKey == "" || s.apiKey == "mock" || s.apiKey == "your-claude-api-key" {
+	// Use mock response if no real API key or if key is placeholder
+	if s.apiKey == "" || s.apiKey == "mock" || s.apiKey == "your-claude-api-key" || s.httpClient == nil {
 		return s.generateMockResponse(goal), nil
 	}
 
-	// TODO: Implement real Anthropic API call when API key is provided
-	// For now, return mock response even with real API key to avoid issues
-	return s.generateMockResponse(goal), nil
+	// Make real API call to Anthropic
+	return s.callAnthropicAPI(ctx, goal)
+}
+
+// AnthropicRequest represents the request payload for Anthropic API
+type AnthropicRequest struct {
+	Model     string `json:"model"`
+	MaxTokens int    `json:"max_tokens"`
+	Messages  []struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	} `json:"messages"`
+}
+
+// AnthropicResponse represents the response from Anthropic API
+type AnthropicResponse struct {
+	Content []struct {
+		Text string `json:"text"`
+		Type string `json:"type"`
+	} `json:"content"`
+	ID           string `json:"id"`
+	Model        string `json:"model"`
+	Role         string `json:"role"`
+	StopReason   string `json:"stop_reason"`
+	StopSequence string `json:"stop_sequence"`
+	Type         string `json:"type"`
+	Usage        struct {
+		InputTokens  int `json:"input_tokens"`
+		OutputTokens int `json:"output_tokens"`
+	} `json:"usage"`
+}
+
+func (s *AnthropicService) callAnthropicAPI(ctx context.Context, goal string) (string, error) {
+	prompt := fmt.Sprintf(`You are a helpful AI assistant that provides guidance and motivation for personal goals. 
+
+A user has shared this goal: "%s"
+
+Please provide a supportive, actionable response that:
+1. Acknowledges their goal positively
+2. Offers 2-3 specific, practical steps they can take to work toward this goal
+3. Includes encouragement and motivation
+4. Keeps the response concise (under 200 words)
+
+Be warm, encouraging, and focus on actionable advice.`, goal)
+
+	// Prepare request payload
+	requestPayload := AnthropicRequest{
+		Model:     "claude-3-5-sonnet-20241022",
+		MaxTokens: 250,
+		Messages: []struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		}{
+			{
+				Role:    "user",
+				Content: prompt,
+			},
+		},
+	}
+
+	// Marshal request to JSON
+	jsonData, err := json.Marshal(requestPayload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	// Create HTTP request
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.anthropic.com/v1/messages", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-key", s.apiKey)
+	req.Header.Set("anthropic-version", "2023-06-01")
+
+	// Make the request
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to make request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check status code
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	// Read response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response: %w", err)
+	}
+
+	// Parse response
+	var apiResponse AnthropicResponse
+	if err := json.Unmarshal(body, &apiResponse); err != nil {
+		return "", fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	// Extract text from response
+	if len(apiResponse.Content) > 0 && apiResponse.Content[0].Text != "" {
+		return apiResponse.Content[0].Text, nil
+	}
+
+	return "", fmt.Errorf("unexpected response format from Claude")
 }
 
 func (s *AnthropicService) generateMockResponse(goal string) string {
