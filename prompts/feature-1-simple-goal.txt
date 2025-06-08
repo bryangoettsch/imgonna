@@ -1,0 +1,140 @@
+Prompt: Feature #1 - Simple Goal Input and AI Response
+
+Description: Implement a simple goal input feature on the landing page that allows users to enter a goal, submit it to a /goals endpoint, and display the AI response from the Anthropic API.
+
+## GitHub Issue Details
+- **Issue Type**: feature
+- **Issue Number**: 1
+- **Title**: Simple goal
+- **Repository**: bryangoettsch/imgonna
+- **Description**: Create a simple bar on the landing page that allow a user to enter a goal. The goal is posted to the /goals endpoint which returns a response from the anthropic API and is displayed on the app.
+
+## Requirements
+
+### Frontend (React)
+1. Create a goal input component on the landing page
+   - Simple input field/bar for entering goals
+   - Submit button to send the goal
+   - Loading state while waiting for API response
+   - Display area for the AI response
+   - Error handling for failed requests
+
+2. Implement API integration
+   - HTTP client setup for calling backend
+   - POST request to `/goals` endpoint
+   - Handle loading, success, and error states
+   - Type definitions for goal request/response
+
+3. Update the main App component
+   - Integrate the goal input component
+   - Ensure responsive design with Tailwind CSS
+   - Follow the minimalist design principles
+
+### Backend (Go)
+1. Create `/goals` endpoint
+   - POST `/api/v1/goals` endpoint
+   - Accept goal text in request body
+   - Validate input (non-empty, reasonable length)
+   - Return structured JSON response
+
+2. Integrate Anthropic API
+   - Set up Anthropic client with API key
+   - Send goal to Claude API for processing
+   - Handle API errors gracefully
+   - Return formatted response to frontend
+
+3. Add proper middleware
+   - CORS configuration for frontend requests
+   - Request logging
+   - Error handling middleware
+   - Input validation
+
+### Database (Optional for this feature)
+- Consider if goals should be stored for future features
+- If yes, create goals table and model
+- If no, keep it stateless for now
+
+### Testing
+1. Backend tests
+   - Unit tests for the goals handler
+   - Test Anthropic API integration (with mocks)
+   - Test input validation
+   - Test error scenarios
+
+2. Frontend tests
+   - Component tests for goal input
+   - API integration tests
+   - User interaction tests
+   - Error state tests
+
+## Technical Implementation Details
+
+### API Contract
+```
+POST /api/v1/goals
+Content-Type: application/json
+
+Request:
+{
+  "goal": "string (required, 1-500 characters)"
+}
+
+Response:
+{
+  "success": true,
+  "response": "string (AI response)",
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+
+Error Response:
+{
+  "success": false,
+  "error": "string (error message)",
+  "timestamp": "2024-01-01T00:00:00Z"
+}
+```
+
+### Environment Variables
+Add to env.local:
+```
+CLAUDE_API_KEY=your-claude-api-key
+```
+
+Add to frontend environment:
+```
+REACT_APP_API_URL=http://localhost:8080
+```
+
+## Development Workflow
+1. Switch to main branch and pull latest code: `git checkout main && git pull`
+2. Create feature branch: `git checkout -b feature/1-simple-goal`
+3. Implement backend /goals endpoint first
+4. Add Anthropic API integration
+5. Create frontend goal input component
+6. Integrate frontend with backend API
+7. Add comprehensive tests for both frontend and backend
+8. Test the complete flow end-to-end
+9. Update documentation if needed
+10. Ensure all tests pass: `make test`
+11. Create PR using steps in prompts/create-a-pr.txt indicating work item #1
+
+## Acceptance Criteria
+- [ ] User can enter a goal in the input field on the landing page
+- [ ] Clicking submit sends the goal to the backend /goals endpoint
+- [ ] Backend successfully calls Anthropic API with the goal
+- [ ] AI response is returned and displayed to the user
+- [ ] Loading states are shown during API calls
+- [ ] Error states are handled gracefully
+- [ ] Input validation prevents empty or overly long goals
+- [ ] All tests pass (both frontend and backend)
+- [ ] Code follows project conventions and is properly documented
+- [ ] Feature works in both local development and Docker environments
+
+## Notes
+- This is the first user-facing feature, so focus on clean, simple UX
+- Keep the design minimal and consistent with the project's aesthetic
+- Ensure the Anthropic API integration is robust and handles rate limits
+- Consider adding basic analytics/logging for goal submissions
+- Make sure CORS is properly configured for frontend-backend communication
+
+This feature establishes the foundation for user interaction with AI assistance in the imgonna application.
