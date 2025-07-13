@@ -1,10 +1,11 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import { goalsApi, type GoalResponse } from '../api/goals'
+import { goalsApi, type GoalResponse, type MediaRecommendations } from '../api/goals'
 
 interface GoalState {
   currentGoal: string
   response: string | null
+  mediaRecommendations: MediaRecommendations | null
   isLoading: boolean
   error: string | null
   setCurrentGoal: (goal: string) => void
@@ -18,6 +19,7 @@ export const useGoalStore = create<GoalState>()(
     (set, get) => ({
       currentGoal: '',
       response: null,
+      mediaRecommendations: null,
       isLoading: false,
       error: null,
 
@@ -25,7 +27,7 @@ export const useGoalStore = create<GoalState>()(
         set({ currentGoal: goal }, false, 'goal/setCurrentGoal'),
 
       submitGoal: async (goal: string) => {
-        set({ isLoading: true, error: null, response: null }, false, 'goal/submitStart')
+        set({ isLoading: true, error: null, response: null, mediaRecommendations: null }, false, 'goal/submitStart')
         
         try {
           const result = await goalsApi.submitGoal(goal)
@@ -33,7 +35,8 @@ export const useGoalStore = create<GoalState>()(
           if (result.success && result.response) {
             set(
               { 
-                response: result.response, 
+                response: result.response,
+                mediaRecommendations: result.mediaRecommendations || null,
                 isLoading: false,
                 currentGoal: ''
               },
@@ -63,7 +66,7 @@ export const useGoalStore = create<GoalState>()(
       },
 
       clearResponse: () =>
-        set({ response: null }, false, 'goal/clearResponse'),
+        set({ response: null, mediaRecommendations: null }, false, 'goal/clearResponse'),
 
       clearError: () =>
         set({ error: null }, false, 'goal/clearError'),

@@ -8,6 +8,13 @@ import { useGoalStore } from '../../store/useGoalStore'
 vi.mock('../../store/useGoalStore')
 const mockUseGoalStore = vi.mocked(useGoalStore)
 
+// Mock MediaRecommendations component
+vi.mock('../MediaRecommendations', () => ({
+  MediaRecommendations: vi.fn(({ recommendations }) => 
+    recommendations ? <div data-testid="media-recommendations">Media Recommendations</div> : null
+  )
+}))
+
 describe('GoalInput', () => {
   const mockSubmitGoal = vi.fn()
   const mockClearError = vi.fn()
@@ -19,6 +26,7 @@ describe('GoalInput', () => {
     mockUseGoalStore.mockReturnValue({
       currentGoal: '',
       response: null,
+      mediaRecommendations: null,
       isLoading: false,
       error: null,
       setCurrentGoal: vi.fn(),
@@ -75,6 +83,7 @@ describe('GoalInput', () => {
     mockUseGoalStore.mockReturnValue({
       currentGoal: '',
       response: null,
+      mediaRecommendations: null,
       isLoading: true,
       error: null,
       setCurrentGoal: vi.fn(),
@@ -93,6 +102,7 @@ describe('GoalInput', () => {
     mockUseGoalStore.mockReturnValue({
       currentGoal: '',
       response: 'Great goal! Here are some steps to get started...',
+      mediaRecommendations: null,
       isLoading: false,
       error: null,
       setCurrentGoal: vi.fn(),
@@ -112,6 +122,7 @@ describe('GoalInput', () => {
     mockUseGoalStore.mockReturnValue({
       currentGoal: '',
       response: null,
+      mediaRecommendations: null,
       isLoading: false,
       error: 'Failed to process goal',
       setCurrentGoal: vi.fn(),
@@ -131,6 +142,7 @@ describe('GoalInput', () => {
     mockUseGoalStore.mockReturnValue({
       currentGoal: '',
       response: null,
+      mediaRecommendations: null,
       isLoading: false,
       error: 'Failed to process goal',
       setCurrentGoal: vi.fn(),
@@ -153,6 +165,7 @@ describe('GoalInput', () => {
     mockUseGoalStore.mockReturnValue({
       currentGoal: '',
       response: 'Great goal! Here are some steps...',
+      mediaRecommendations: null,
       isLoading: false,
       error: null,
       setCurrentGoal: vi.fn(),
@@ -168,5 +181,28 @@ describe('GoalInput', () => {
     
     expect(mockClearResponse).toHaveBeenCalled()
     expect(mockClearError).toHaveBeenCalled()
+  })
+
+  it('shows media recommendations when available', () => {
+    mockUseGoalStore.mockReturnValue({
+      currentGoal: '',
+      response: 'Great goal! Here are some steps...',
+      mediaRecommendations: {
+        podcasts: [{ title: 'Test Podcast', platform: 'Spotify' }],
+        streaming: [{ title: 'Test Video', platform: 'YouTube' }],
+        books: [{ title: 'Test Book' }],
+        websites: [{ title: 'Test Website', link: 'https://example.com' }]
+      },
+      isLoading: false,
+      error: null,
+      setCurrentGoal: vi.fn(),
+      submitGoal: mockSubmitGoal,
+      clearResponse: mockClearResponse,
+      clearError: mockClearError,
+    })
+
+    render(<GoalInput />)
+    
+    expect(screen.getByTestId('media-recommendations')).toBeInTheDocument()
   })
 })

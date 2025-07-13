@@ -7,7 +7,7 @@ Requiremnts:
     2. The repositories are in the subdirectories
     3. Use the PR template in the repo.
     4. Use the title of the work item as the title of the PR
-    5. Fill in the template defined in the .azuredevops firectory with a full description of what, how and why 
+    5. Fill in the template defined in the .github directory with a full description of what, how and why 
     6. Use markdown format to make the desscription human readable
     7. Add the reviewer BRCX to the PR
     8. Link the workitem to the PR using the devops work item link feature

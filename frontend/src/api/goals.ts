@@ -2,9 +2,24 @@ export interface GoalRequest {
   goal: string;
 }
 
+export interface MediaItem {
+  title: string;
+  link?: string;
+  platform?: string;
+  description?: string;
+}
+
+export interface MediaRecommendations {
+  podcasts: MediaItem[];
+  streaming: MediaItem[];
+  books: MediaItem[];
+  websites: MediaItem[];
+}
+
 export interface GoalResponse {
   success: boolean;
   response?: string;
+  mediaRecommendations?: MediaRecommendations;
   error?: string;
   timestamp: string;
 }

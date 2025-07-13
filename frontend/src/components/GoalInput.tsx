@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useGoalStore } from '../store/useGoalStore'
+import { MediaRecommendations } from './MediaRecommendations'
 
 export function GoalInput() {
   const [inputValue, setInputValue] = useState('')
-  const { submitGoal, isLoading, response, error, clearError, clearResponse } = useGoalStore()
+  const { submitGoal, isLoading, response, mediaRecommendations, error, clearError, clearResponse } = useGoalStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,7 +35,7 @@ export function GoalInput() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6">
+    <div className="w-full max-w-6xl mx-auto p-6">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           What's your goal?
@@ -86,6 +87,10 @@ export function GoalInput() {
               {response}
             </div>
           </div>
+          
+          {mediaRecommendations && (
+            <MediaRecommendations recommendations={mediaRecommendations} />
+          )}
           
           <button
             onClick={handleNewGoal}

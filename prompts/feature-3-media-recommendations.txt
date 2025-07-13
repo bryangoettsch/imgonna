@@ -1,0 +1,109 @@
+Prompt: Implement Media Recommendations for User Goals
+
+Description: Add functionality to retrieve and display relevant media recommendations (podcasts, streaming media, books, and websites) when users submit their goals.
+
+Context:
+- This is for GitHub issue #3: "Get relevant media for my goal"
+- Repository: bryangoettsch/imgonna
+- Current implementation has a simple goal input that sends goals to Claude for processing
+- Media recommendations should be displayed on the same page as the goal input
+
+Requirements:
+
+## Setup
+1. Switch to main branch and pull latest changes:
+   ```bash
+   git checkout main
+   git pull
+   ```
+
+2. Create and switch to feature branch:
+   ```bash
+   git checkout -b feature/3-media-recommendations
+   ```
+
+## Backend Implementation
+
+1. Update the Anthropic service (`backend/internal/services/anthropic.go`):
+   - Modify the Claude prompt to request media recommendations in addition to goal processing
+   - Request 5-10 specific titles for each media category:
+     * Podcasts (with links to Spotify or Apple Podcasts when possible)
+     * Streaming media (with platform indication - Netflix, Hulu, Prime Video, YouTube, etc.)
+     * Books (with Amazon links when possible)
+     * Websites (with direct URLs)
+   - Structure the prompt to return JSON with both the goal analysis and media recommendations
+
+2. Update the goal model (`backend/internal/models/goal.go`):
+   - Add structs for media recommendations
+   - Include fields for title, link/platform, and description for each media item
+
+3. Update the goals handler (`backend/internal/handlers/goals.go`):
+   - Modify the response structure to include media recommendations
+   - Ensure backward compatibility with existing frontend
+
+4. Add comprehensive tests for the new functionality
+
+## Frontend Implementation
+
+1. Update the goal store (`frontend/src/store/useGoalStore.ts`):
+   - Add state for storing media recommendations
+   - Update the types to match the new API response structure
+
+2. Create new components for displaying media:
+   - `MediaRecommendations.tsx`: Main component to display all media categories
+   - `MediaCategory.tsx`: Component to display a single category of media
+   - Include proper TypeScript types for all media items
+
+3. Update `GoalInput.tsx`:
+   - Display media recommendations below the goal response
+   - Add loading states for media recommendations
+   - Implement collapsible sections for each media category
+   - Style with Tailwind CSS to match existing design
+
+4. Update the API client (`frontend/src/api/goals.ts`):
+   - Update types to handle the new response structure
+   - Ensure proper error handling
+
+5. Add tests for all new components and functionality
+
+## Testing
+1. Run backend tests:
+   ```bash
+   make test-backend
+   ```
+
+2. Run frontend tests:
+   ```bash
+   make test-frontend
+   ```
+
+3. Manual testing:
+   - Test with various goal inputs
+   - Verify all media categories return appropriate recommendations
+   - Check that links work correctly
+   - Ensure UI displays properly on different screen sizes
+
+## Pull Request
+1. After completing implementation and testing, create a PR following the steps in `prompts/create-a-pr.txt`
+2. PR Title: "Get relevant media for my goal"
+3. Link to issue #3 in the PR description
+4. Include screenshots of the new media recommendations UI
+5. Document any API changes in the PR description
+
+## Implementation Notes
+- Media recommendations are generated fresh each time (no database storage)
+- Links should open in new tabs
+- Handle cases where Claude might not return recommendations for all categories
+- Ensure graceful degradation if media recommendations fail but goal processing succeeds
+- Consider adding a "refresh recommendations" button for future enhancement
+
+## Success Criteria
+- Users can input a goal and receive 5-10 specific media recommendations per category
+- Podcasts include platform links (Spotify/Apple Podcasts)
+- Streaming media indicates the platform (Netflix, Hulu, YouTube, etc.)
+- Books include Amazon links
+- Websites include direct URLs
+- All recommendations display on the same page as the goal input
+- The UI is responsive and matches the existing design
+- All tests pass
+- Code follows existing patterns and conventions in the codebase

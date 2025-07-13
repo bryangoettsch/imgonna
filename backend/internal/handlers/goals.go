@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -34,8 +35,12 @@ func (h *GoalsHandler) CreateGoal(c *gin.Context) {
 	}
 
 	// Process the goal with Anthropic API
-	aiResponse, err := h.anthropicService.ProcessGoal(c.Request.Context(), req.Goal)
+	aiResponse, mediaRecommendations, err := h.anthropicService.ProcessGoal(c.Request.Context(), req.Goal)
 	if err != nil {
+		slog.Error("Failed to process goal", 
+			"error", err,
+			"goal", req.Goal,
+			"request_id", c.GetString("RequestId"))
 		response := models.GoalResponse{
 			Success:   false,
 			Error:     "Failed to process goal: " + err.Error(),
@@ -47,10 +52,16 @@ func (h *GoalsHandler) CreateGoal(c *gin.Context) {
 
 	// Return successful response
 	response := models.GoalResponse{
-		Success:   true,
-		Response:  aiResponse,
-		Timestamp: time.Now(),
+		Success:              true,
+		Response:             aiResponse,
+		MediaRecommendations: mediaRecommendations,
+		Timestamp:            time.Now(),
 	}
+
+	slog.Debug("Goal processed successfully", 
+		"goal", req.Goal,
+		"has_media", mediaRecommendations != nil,
+		"request_id", c.GetString("RequestId"))
 
 	c.JSON(http.StatusOK, response)
 }

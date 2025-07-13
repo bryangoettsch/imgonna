@@ -12,6 +12,7 @@ describe('useGoalStore', () => {
     useGoalStore.setState({
       currentGoal: '',
       response: null,
+      mediaRecommendations: null,
       isLoading: false,
       error: null,
     })
@@ -21,6 +22,7 @@ describe('useGoalStore', () => {
     const state = useGoalStore.getState()
     expect(state.currentGoal).toBe('')
     expect(state.response).toBeNull()
+    expect(state.mediaRecommendations).toBeNull()
     expect(state.isLoading).toBe(false)
     expect(state.error).toBeNull()
   })
@@ -32,10 +34,19 @@ describe('useGoalStore', () => {
   })
 
   it('should clear response', () => {
-    useGoalStore.setState({ response: 'Some response' })
+    useGoalStore.setState({ 
+      response: 'Some response',
+      mediaRecommendations: {
+        podcasts: [],
+        streaming: [],
+        books: [],
+        websites: []
+      }
+    })
     useGoalStore.getState().clearResponse()
     const state = useGoalStore.getState()
     expect(state.response).toBeNull()
+    expect(state.mediaRecommendations).toBeNull()
   })
 
   it('should clear error', () => {
@@ -118,5 +129,38 @@ describe('useGoalStore', () => {
     
     // Check final state
     expect(useGoalStore.getState().isLoading).toBe(false)
+  })
+
+  it('should handle successful goal submission with media recommendations', async () => {
+    const mockResponse = {
+      success: true,
+      response: 'Great goal! Here are some steps...',
+      mediaRecommendations: {
+        podcasts: [
+          { title: 'Test Podcast', platform: 'Spotify', link: 'https://spotify.com', description: 'A test podcast' }
+        ],
+        streaming: [
+          { title: 'Test Video', platform: 'YouTube', description: 'A test video' }
+        ],
+        books: [
+          { title: 'Test Book', link: 'https://amazon.com', description: 'A test book' }
+        ],
+        websites: [
+          { title: 'Test Website', link: 'https://example.com', description: 'A test website' }
+        ]
+      },
+      timestamp: '2024-01-01T00:00:00Z'
+    }
+    
+    mockGoalsApi.submitGoal.mockResolvedValue(mockResponse)
+
+    await useGoalStore.getState().submitGoal('Learn to play guitar')
+    
+    const state = useGoalStore.getState()
+    expect(state.response).toBe('Great goal! Here are some steps...')
+    expect(state.mediaRecommendations).toEqual(mockResponse.mediaRecommendations)
+    expect(state.isLoading).toBe(false)
+    expect(state.error).toBeNull()
+    expect(state.currentGoal).toBe('')
   })
 })

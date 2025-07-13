@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -13,10 +14,27 @@ import (
 )
 
 func main() {
-	// Set gin mode
+	// Configure slog based on environment
+	var logLevel slog.Level
 	if os.Getenv("ENVIRONMENT") == "production" {
 		gin.SetMode(gin.ReleaseMode)
+		logLevel = slog.LevelInfo
+	} else {
+		// Development mode - enable debug logging
+		logLevel = slog.LevelDebug
 	}
+
+	// Set up slog with appropriate level
+	opts := &slog.HandlerOptions{
+		Level: logLevel,
+	}
+	handler := slog.NewTextHandler(os.Stdout, opts)
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
+	slog.Info("Starting imgonna backend", 
+		"environment", os.Getenv("ENVIRONMENT"),
+		"log_level", logLevel.String())
 
 	r := gin.Default()
 
@@ -60,6 +78,9 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Server starting on port %s", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	slog.Info("Server starting", "port", port)
+	if err := http.ListenAndServe(":"+port, r); err != nil {
+		slog.Error("Server failed to start", "error", err)
+		log.Fatal(err)
+	}
 }

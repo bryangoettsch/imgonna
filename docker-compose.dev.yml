@@ -28,6 +28,7 @@ services:
       - .env.local
     environment:
       - DB_HOST=postgres
+      - ENVIRONMENT=development
     ports:
       - "8080:8080"
     depends_on:

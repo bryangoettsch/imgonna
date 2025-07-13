@@ -30,9 +30,9 @@ local-backend: stop-backend
 	@echo "📦 Keeping PostgreSQL running in Docker..."
 	docker compose -f docker-compose.dev.yml up postgres -d
 	@echo "🏃 Run the following commands in separate terminals:"
-	@echo "   cd backend && go run main.go"
-	@echo "   OR for hot reload: cd backend && air"
-	@echo "   OR debug in VS Code with F5"
+	@echo "   cd backend && ENVIRONMENT=development go run main.go"
+	@echo "   OR for hot reload: cd backend && ENVIRONMENT=development air"
+	@echo "   OR debug in VS Code with F5 (make sure launch.json sets ENVIRONMENT=development)"
 
 # Stop only the backend container
 stop-backend:

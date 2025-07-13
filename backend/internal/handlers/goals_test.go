@@ -19,9 +19,12 @@ type MockAnthropicService struct {
 	mock.Mock
 }
 
-func (m *MockAnthropicService) ProcessGoal(ctx context.Context, goal string) (string, error) {
+func (m *MockAnthropicService) ProcessGoal(ctx context.Context, goal string) (string, *models.MediaRecommendations, error) {
 	args := m.Called(ctx, goal)
-	return args.String(0), args.Error(1)
+	if args.Get(1) == nil {
+		return args.String(0), nil, args.Error(2)
+	}
+	return args.String(0), args.Get(1).(*models.MediaRecommendations), args.Error(2)
 }
 
 func TestGoalsHandler_CreateGoal_Success(t *testing.T) {
@@ -32,7 +35,7 @@ func TestGoalsHandler_CreateGoal_Success(t *testing.T) {
 
 	// Mock successful response
 	mockService.On("ProcessGoal", mock.Anything, "Learn to play guitar").
-		Return("Great goal! Here's how you can start learning guitar...", nil)
+		Return("Great goal! Here's how you can start learning guitar...", nil, nil)
 
 	// Create request
 	goalRequest := models.GoalRequest{Goal: "Learn to play guitar"}
@@ -57,6 +60,65 @@ func TestGoalsHandler_CreateGoal_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, response.Success)
 	assert.Equal(t, "Great goal! Here's how you can start learning guitar...", response.Response)
+	assert.Empty(t, response.Error)
+
+	mockService.AssertExpectations(t)
+}
+
+func TestGoalsHandler_CreateGoal_WithMediaRecommendations(t *testing.T) {
+	// Setup
+	gin.SetMode(gin.TestMode)
+	mockService := new(MockAnthropicService)
+	handler := NewGoalsHandler(mockService)
+
+	// Create mock media recommendations
+	mockMedia := &models.MediaRecommendations{
+		Podcasts: []models.MediaItem{
+			{Title: "Test Podcast", Platform: "Spotify", Link: "https://spotify.com", Description: "A test podcast"},
+		},
+		Streaming: []models.MediaItem{
+			{Title: "Test Video", Platform: "YouTube", Description: "A test video"},
+		},
+		Books: []models.MediaItem{
+			{Title: "Test Book", Link: "https://amazon.com", Description: "A test book"},
+		},
+		Websites: []models.MediaItem{
+			{Title: "Test Website", Link: "https://example.com", Description: "A test website"},
+		},
+	}
+
+	// Mock successful response with media
+	mockService.On("ProcessGoal", mock.Anything, "Learn to play guitar").
+		Return("Great goal! Here's how you can start learning guitar...", mockMedia, nil)
+
+	// Create request
+	goalRequest := models.GoalRequest{Goal: "Learn to play guitar"}
+	jsonData, _ := json.Marshal(goalRequest)
+
+	req, _ := http.NewRequest("POST", "/goals", bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+
+	// Setup Gin context
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = req
+
+	// Execute
+	handler.CreateGoal(c)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var response models.GoalResponse
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.True(t, response.Success)
+	assert.Equal(t, "Great goal! Here's how you can start learning guitar...", response.Response)
+	assert.NotNil(t, response.MediaRecommendations)
+	assert.Len(t, response.MediaRecommendations.Podcasts, 1)
+	assert.Len(t, response.MediaRecommendations.Streaming, 1)
+	assert.Len(t, response.MediaRecommendations.Books, 1)
+	assert.Len(t, response.MediaRecommendations.Websites, 1)
 	assert.Empty(t, response.Error)
 
 	mockService.AssertExpectations(t)
